@@ -1,1 +1,37 @@
+name: Deploy to EC2
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Paso 1: Descargar el código
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Paso 2: Copiar archivos a EC2
+      - name: Copy files to EC2
+        env:
+          EC2_IP: ${{ secrets.EC2_IP }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${EC2_IP}:/home/ec2-user/app/
+
+      # Paso 3: Ejecutar comandos en EC2
+      - name: Deploy application
+        env:
+          EC2_IP: ${{ secrets.EC2_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${EC2_IP} << 'EOF'
+          cd /home/ec2-user/app
+          # Aquí puedes agregar más comandos, como reiniciar servicios, instalar dependencias, etc.
+          echo "Deployment complete"
+          EOF
