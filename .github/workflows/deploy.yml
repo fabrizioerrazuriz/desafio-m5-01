@@ -23,7 +23,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${SSH_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./*  ec2-user@ec2-204-236-202-80.compute-1.amazonaws.com
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./*  ec2-user@ec2-204-236-202-80.compute-1.amazonaws.com:/home/ec2-user/app/
 
       # Paso 3: Ejecutar comandos en EC2
       - name: Deploy application
@@ -35,3 +35,6 @@ jobs:
           # Aquí puedes agregar más comandos, como reiniciar servicios, instalar dependencias, etc.
           echo "Deployment complete"
           EOF
+
+
+
