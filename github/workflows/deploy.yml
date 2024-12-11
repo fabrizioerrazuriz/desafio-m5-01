@@ -17,20 +17,20 @@ jobs:
       # Paso 2: Copiar archivos a EC2
       - name: Copy files to EC2
         env:
-          EC2_IP: ${{ secrets.EC2_IP }}
+          EC2_IP: ${{ 204.236.202.80 }}
           SSH_KEY: ${{ secrets.SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "${SSH_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${EC2_IP}:/home/ec2-user/app/
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${204.236.202.80}:/home/ec2-user/app/
 
       # Paso 3: Ejecutar comandos en EC2
       - name: Deploy application
         env:
-          EC2_IP: ${{ secrets.EC2_IP }}
+          204.236.202.80: ${{ secrets.204.236.202.80 }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${EC2_IP} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${204.236.202.80} << 'EOF'
           cd /home/ec2-user/app
           # Aquí puedes agregar más comandos, como reiniciar servicios, instalar dependencias, etc.
           echo "Deployment complete"
