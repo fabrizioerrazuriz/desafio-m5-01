@@ -1,30 +1,37 @@
 name: Deploy to EC2
+
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
+
 jobs:
-deploy:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v3
-- name: Copy files to EC2
-run: |
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@<204.236.202.80>
-"mkdir -p /home/ec2-user/app"
-scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./*
-ec2-user@<204.236.202.80>:/home/ec2-user/app
-- name: Deploy application
-run: |
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@<204.236.202.80>
+  deploy:
+    runs-on: ubuntu-latest
 
--name: aws ec2 run-instances \
-run: |
+    steps:
+      # Paso 1: Descargar el código
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    --image-id i-0cd2c773a95a9db72 \
-    --instance-type t2.micro \
-    --subnet-id subnet-05d09a5059867c362 \
-    --security-group-ids sg-0ee99d727995d57f9 \
-    --associate-public-ip-address  204.236.202.80\
-    --key-name keys.pem
+      # Paso 2: Copiar archivos a EC2
+      - name: Copy files to EC2
+        env:
+          EC2_IP: ${{ secrets.EC2_IP }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_KEY}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${EC2_IP}:/home/ec2-user/app/
+
+      # Paso 3: Ejecutar comandos en EC2
+      - name: Deploy application
+        env:
+          EC2_IP: ${{ secrets.EC2_IP }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${EC2_IP} << 'EOF'
+          cd /home/ec2-user/app
+          # Aquí puedes agregar más comandos, como reiniciar servicios, instalar dependencias, etc.
+          echo "Deployment complete"
+          EOF
