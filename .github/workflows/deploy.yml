@@ -24,18 +24,24 @@ jobs:
           chmod 700 ~/.ssh
           echo "${SSH_KEY}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${{ secrets.EC2_IP }}:/var/www/html
-
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/
       # Paso 3: Ejecutar comandos en EC2
       - name: Deploy application
         env:
           EC2_IP: ${{ secrets.EC2_IP }}
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << "EOF"
-          cd //var/www/html
-          # Aquí puedes agregar más comandos, como reiniciar servicios, instalar dependencias, etc.
-          echo "Deployment complete"
-          EOF
+          cd /home/ec2-user/app
+
+    # Usar SSH para mover los archivos a /var/www/html
+    
+    ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << "EOF"
+    sudo mv /home/ec2-user/index.html /var/www/html/index.html
+    sudo mv /home/ec2-user/error.html /var/www/html/error.html
+    sudo chown apache:apache /var/www/html/index.html /var/www/html/error.html
+    sudo systemctl restart httpd
+    echo "Deployment complete"
+    EOF
 
 
 
