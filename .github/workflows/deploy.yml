@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Paso 1: Descargar el código
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Paso 2: Copiar archivos a EC2
       - name: Copy files to EC2
         env:
           EC2_IP: ${{ secrets.EC2_IP }}
@@ -24,6 +26,16 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./* ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/
 
+          # Usar SSH para mover los archivos a /var/www/html
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << "EOF"
+          sudo mv /home/ec2-user/index.html /var/www/html/index.html
+          sudo mv /home/ec2-user/error.html /var/www/html/error.html
+          sudo chown apache:apache /var/www/html/index.html /var/www/html/error.html
+          sudo systemctl restart httpd
+          echo "Deployment complete"
+          EOF
+
+      # Paso 3: Ejecutar comandos adicionales si es necesario
       - name: Deploy application
         env:
           EC2_IP: ${{ secrets.EC2_IP }}
@@ -32,6 +44,5 @@ jobs:
           cd /home/ec2-user/app
           echo "Deployment complete"
           EOF
-
 
 
