@@ -43,6 +43,3 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_IP }} << "EOF"
           cd /home/ec2-user/app
           echo "Deployment complete"
-          EOF
-
-
